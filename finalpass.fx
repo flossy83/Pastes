@@ -18,12 +18,13 @@ PS_OUTPUT_SIMPLE PS_final(PS_INPUT_SIMPLE input)
 				
 	int3 coords = int3(input.pos.xy,0);		
 	output.color=inputTexture.Load(coords);
-
+		
+	#if(CLASSIC_LIGHTING==1)
 	// Apply the in-game brightness setting so that its default (0.5)
-	// results in gamma=(1.0/1.3) - supposedly the value which video
-	// cards of that era were set to by default
+	// results in gamma=(1.0/1.3) - supposedly the value which video cards
+	// of that era were set to by default
 	output.color.rgb=pow(abs(output.color.rgb),1.0f/(brightness+0.8f));
-
+	
 	// Subpixel dithering to prevent gradient banding	
 	float seed = dot(input.pos.xy, float2(12.9898f,78.233f));
 	float noise = frac(frac(sin(seed)) * 43758.5453f);
@@ -36,7 +37,16 @@ PS_OUTPUT_SIMPLE PS_final(PS_INPUT_SIMPLE input)
 	if ((output.color.b != 0) && (output.color.b != 1))
 		output.color.b += -noise;
 	
+
+	#else
+	// Kentie's original code so that his new lighting model is unaffected
+	float gamma = 2.5f*brightness*GAMMA_SCALE;
+	output.color.rgb=pow(abs(output.color.rgb),1.0f/gamma);	
+	#endif
+	
 	return output;
+
+
 	
 
 }
